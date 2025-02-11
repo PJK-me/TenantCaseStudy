@@ -1,0 +1,34 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_DB: tcs_db
+      POSTGRES_USER: tcs_user
+      POSTGRES_PASSWORD: tcs_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  web:
+    build: .
+    container_name: django_app
+    env_file:
+      - .env
+    depends_on:
+      - db
+    restart: always
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgres://tcs_user:tcs_password@db:5432/tcs_db
+    command: ["gunicorn", "--bind", "0.0.0.0:8000", "main.wsgi:application"]
+
+volumes:
+  postgres_data:

@@ -1,0 +1,50 @@
+# Python
+*.pyc
+*.pyo
+__pycache__/
+*.pyd
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Django
+*.log
+*.pot
+*.pyc
+__pycache__/
+db.sqlite3
+*.sqlite3
+*.log
+*.pot
+*.pyc
+*.pyo
+*.db
+
+# .env files (for environment variables)
+.env
+
+# Docker
+docker-compose.override.yml
+*.dockerfile
+.dockerignore
+
+# IDE/Editor files
+.vscode/
+.idea/
+
+# Pytest
+.cache/
+
+# MacOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# Miscellaneous
+*.bak
+*.swp
+
