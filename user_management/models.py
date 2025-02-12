@@ -50,30 +50,22 @@ class BaseUser(AbstractUser):
 
         queryset = model.objects.filter(**filters)
         related_fields = [field for field in filters.keys() if '__' not in field]
-
-        if related_fields:
-            return queryset.select_related(*related_fields)
-
-        return queryset
+        return queryset.select_related(*related_fields) if related_fields else queryset
 
     def has_perm(self, perm, obj=None):
         if perm not in ROLE_PERMISSIONS.get(self.role, set()):
             return False
 
         if obj:
+            scope_mappings = {
+                "tenants.Tenant": self.tenant_scope,
+                "tenants.Organization": self.organization_scope,
+                "tenants.Department": self.department_scope,
+                "tenants.Customer": self.customer_scope,
+            }
 
-            tenant_model = apps.get_model('tenants', 'Tenant')
-            org_model = apps.get_model('tenants', 'Organization')
-            dept_model = apps.get_model('tenants', 'Department')
-            customer_model = apps.get_model('tenants', 'Customer')
-
-            if isinstance(obj, tenant_model) and self.tenant_scope != obj:
-                return False
-            if isinstance(obj, org_model) and self.organization_scope != obj:
-                return False
-            if isinstance(obj, dept_model) and self.department_scope != obj:
-                return False
-            if isinstance(obj, customer_model) and self.customer_scope != obj:
+            obj_model_name = f"{obj._meta.app_label}.{obj._meta.model_name}"
+            if obj_model_name in scope_mappings and scope_mappings[obj_model_name] != obj:
                 return False
 
         return True
@@ -113,24 +105,13 @@ class BaseUser(AbstractUser):
 
     def save(self, *args, **kwargs):
         if self.pk:
-            tenant_scope = "tenant_scope"
-            organization_scope = "organization_scope"
-            department_scope = "department_scope"
-            customer_scope = "customer_scope"
+            scope_fields = ["tenant_scope", "organization_scope", "department_scope", "customer_scope"]
 
-            old_instance = BaseUser.objects.filter(pk=self.pk).values(
-                tenant_scope, organization_scope, department_scope, customer_scope
-            ).first()
+            old_instance = BaseUser.objects.filter(pk=self.pk).values(*scope_fields).first()
 
-            # can be handled in a loop with getattr (later)
-            if old_instance.get(tenant_scope) != self.tenant_scope:
-                raise ValidationError({tenant_scope: "You cannot change your tenant scope."})
-            if old_instance.get(organization_scope) != self.organization_scope:
-                raise ValidationError({organization_scope: "You cannot change your organization scope."})
-            if old_instance.get(department_scope) != self.department_scope:
-                raise ValidationError({department_scope: "You cannot change your department scope."})
-            if old_instance.get(customer_scope) != self.customer_scope:
-                raise ValidationError({customer_scope: "You cannot change your customer scope."})
+            for field in scope_fields:
+                if old_instance.get(field) != getattr(self, field):
+                    raise ValidationError({field: f"You cannot change your {field.replace('_', ' ')}."})
 
         else:
             pass
