@@ -48,3 +48,11 @@ class UserHasUnnasignedScopeRole(BasePermission):
         if not user.is_authenticated:
             return False
         return user.status == Role.ROLE_UNNASIGNED
+
+class CanAssignRole(BasePermission):
+    def has_permission(self, request, view):
+        user = request.user
+        if view.action == 'assign_role':
+            if user.is_admin():
+                return True
+        return False
