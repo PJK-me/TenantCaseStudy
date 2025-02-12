@@ -1,28 +1,19 @@
 from functools import wraps
-from django.db import connection
-from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
-from .models import Tenant, Domain
+from django.http import HttpResponseForbidden
+from .middleware import get_current_tenant
 
+def tenant_scope_required(cls):
+    original_dispatch = cls.dispatch
 
-def tenant_scope(func):
-    @wraps(func)
+    @wraps(original_dispatch)
+    def new_dispatch(self, request, *args, **kwargs):
+        tenant = get_current_tenant()
 
-    def wrapper(request, *args, **kwargs):
-        domain_url = request.get_host()
+        if not tenant:
+            return HttpResponseForbidden("Tenant not found or not authorized.")
 
-        try:
-            domain = get_object_or_404(Domain, name=domain_url)
-            try:
-                tenant = get_object_or_404(Tenant, domain=domain)
-            except Tenant.DoesNotExist:
-                return JsonResponse({'error': 'tenant associated with this domain does not exist'}, status=404)
+        kwargs["tenant"] = tenant
+        return original_dispatch(self, request, *args, **kwargs)
 
-        except Domain.DoesNotExist:
-            return JsonResponse({'error': 'Domain does not exist'}, status=404)
-
-        request.tenant = tenant
-        
-        return func(request, *args, **kwargs)
-    return wrapper
-
+    cls.dispatch = new_dispatch
+    return cls

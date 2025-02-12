@@ -1,4 +1,4 @@
-from tenants.middleware import get_current_tenant
+from .middleware import get_current_tenant
 
 class TenantDatabaseRouter:
     def db_for_read(self, model, **hints):
