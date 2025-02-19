@@ -24,8 +24,13 @@ class TenantMiddleware:
             domain_tenant = self.get_tenant_from_request(request)
             tenant = None
 
-            if request.path == "/api/" or request.path.startswith("/api-auth/") or request.path.startswith("/api/token/"):
-                # api root, /api/token/ and /api-auth/ are exempt
+            if (
+                    request.path == "/api/"
+                    or request.path.startswith("/admin/")
+                    or request.path.startswith("/api-auth/")
+                    or request.path.startswith("/api/token/")
+            ):
+                # api root, /admin/, /api/token/ and /api-auth/ are exempt
                 # this makes it easier to use browsable api, and to switch users
                 return self.get_response(request)
 
