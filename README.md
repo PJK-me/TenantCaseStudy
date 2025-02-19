@@ -10,8 +10,8 @@
 3. Run the application using Docker
 	1. docker-compose up --build
 4. Access the app
-	1. Browsable API: http://localhost/api/
-	2. Django Admin: http://localhost/admin/
+	2. Browsable API: http://localhost/api/
+	3. Django Admin: http://localhost/admin/
 5. Run tests with PyTest
 	1. pytest
 	2. pytest /tenant/tests/
@@ -22,11 +22,11 @@
 			4.  test_tenant_list.py
 			5.  test_tenant_update.py
 		2. organization_tests/
-			1.  test_organization_creation.py
-			2.  test_organization_deletion.py
-			3.  test_organization_retrival.py
-			4.  test_organization_list.py
-			5.  test_organization_update.py
+			6.  test_organization_creation.py
+			7.  test_organization_deletion.py
+			8.  test_organization_retrival.py
+			9.  test_organization_list.py
+			10.  test_organization_update.py
 		3. department_tests/
 			1.  test_department_creation.py
 			2.  test_department_deletion.py
@@ -34,11 +34,11 @@
 			4.  test_department_list.py
 			5.  test_department_update.py
 		4. customers_tests/
-			1.   test_customers_creation.py
-			2.  test_customers_deletion.py
-			3.  test_customers_retrival.py
-			4.  test_customers_list.py
-			5.  test_customers_update.py
+			6.   test_customers_creation.py
+			7.  test_customers_deletion.py
+			8.  test_customers_retrival.py
+			9.  test_customers_list.py
+			10.  test_customers_update.py
 
 
 ## Overview
@@ -167,6 +167,26 @@ TenantMiddleware ensures that users that are not able to access or even authenti
 Additionally each user contains methods for get_limited_queryset() and get_limited_obj_by_local_id()
 
 Those methods ensure, that even if they are on the same Tenant, they wont be able to access objects outside of their scope, which means each hierarchical level is seperated.
+
+
+## Domain Evaluation
+
+TenantMiddleware ensures that we can only access domains that have been added in the app.
+
+Admin users can access the app regardless of the domain, as long as domain exists they can access it.
+
+Browsable API work with domains with urls '<string>.localhost'
+but API itself can be accessed by setting Host header in request to access domains with any other urls
+
+Example:
+	curl -X POST http://localhost/api/<endpoint_name>/ \
+	-H "Content-Type: application/json" \
+	-H "Host: <domain_url>" \
+	-d '{"<example_key>": "<example_value>"}'
+
+When using Postman to perform requests on domains with urls different from '<string>.localhost', its necessary to add Host containing domain url.
+
+This way, even though ALLOWED_HOST = ["*"] allows making requests with any domain, app still controls which users can access domains in a tenant-aware way.
 
 
 
