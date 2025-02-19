@@ -63,6 +63,8 @@ You can access them like this:
 
 API root is accessible without authorization, but every endpoint ensures that the user that wants to perfom CRUD actions is authorized and contains necessary scope
 
+## Default Example Structure
+
 Management command generates two **Tenants**, two **Organizations** for each **Tenant**, two **Departments** for each **Organization**, and two **Customers** for each **Department**.
 That gives us:
 	2 **Tenants**
