@@ -1,8 +1,8 @@
-import threading
+from asgiref.local import Local
 from django.db.backends.signals import connection_created
 
 
-_thread_locals = threading.local()
+_thread_locals = Local()
 
 def set_tenant_schema(tenant_schema_name):
     _thread_locals.schema_name = tenant_schema_name
